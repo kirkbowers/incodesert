@@ -1,23 +1,23 @@
-# incodesert
+= incodesert
 
-[https://github.com/kirkbowers/incodesert](https://github.com/kirkbowers/incodesert)
+https://github.com/kirkbowers/incodesert
 
-## Description
+== Description
 
     code insert
     code in      sert
          in code sert
          incodesert
 
-`incodesert` (pronounced "in code sert", not "inco desert") 
++incodesert+ (pronounced "in code sert", not "inco desert") 
 is a utility for inserting code snippets from one file into another.
 It was originally intended to facilitate autogenerating code and interlacing that
 autogened code with hand written code.  It is also useful for performing
 Pre-rolled Blackbox Testing.
 
-## Usage
+== Usage
 
-To use `incodesert`, first install it:
+To use +incodesert+, first install it:
 
     [sudo] gem install incodesert
     
@@ -25,12 +25,12 @@ Most likely you will want to run it on the command line, like so:
 
     incodesert [flags] <source-file> <dest-file> [extractions-file]
     
-If you run it with the `--help` flag, it gives a list of all flags and what they do.
+If you run it with the +--help+ flag, it gives a list of all flags and what they do.
 
 Optionally, you can run it inside of Ruby code by passing Strings for the source and
-the destination to the initializer of the `Incodesert::Documents` class and calling
-`perform_insertions!`.  The property `destination` will contain the modified version
-of the destination String, and the property `extractions` will contain the snippets
+the destination to the initializer of the +Incodesert::Documents+ class and calling
++perform_insertions!+.  The property +destination+ will contain the modified version
+of the destination String, and the property +extractions+ will contain the snippets
 extracted (and replaced) from the original destination.
 
     require 'incodesert'
@@ -38,9 +38,9 @@ extracted (and replaced) from the original destination.
     documents = Incodesert::Documents.new(source, destination)
     documents.perform_insertions!
 
-### Special comment format
+=== Special comment format
 
-`incodesert` depends on a special comment format to denote blocks of code that should
++incodesert+ depends on a special comment format to denote blocks of code that should
 be inserted (and where they should be inserted in the destination).  
 
 The format looks like this (in C-style languages):
@@ -61,11 +61,11 @@ In script-style languages, the format is:
       
       # >>> blockname
 
-### Token replacements
+=== Token replacements
 
 The utility also replaces a set of recognized tokens in the source with values either 
 supplied or deduced from the destination.  At this time the only token recognized is
-`__CLASSNAME__`.  If `incodesert` is run from the command line, that token is replaced
++__CLASSNAME__+.  If +incodesert+ is run from the command line, that token is replaced
 by the camel cased filename of the destination file.  This is particularly useful if
 you are autogenerating code for a language like C++ that needs the class name to 
 provide method implementations.
@@ -78,7 +78,7 @@ To make this concrete, suppose you have a source file that looks like this:
     }
     // >>> method_impl
 
-And you had a destination file named `some_class.cpp`:
+And you had a destination file named +some_class.cpp+:
 
     // some stuff
 
@@ -87,7 +87,7 @@ And you had a destination file named `some_class.cpp`:
 
     // some more stuff
 
-After running the insertions, `some_class.cpp` would look like this:
+After running the insertions, +some_class.cpp+ would look like this:
 
     // some stuff
 
@@ -99,18 +99,18 @@ After running the insertions, `some_class.cpp` would look like this:
 
     // some more stuff
 
-## Dependencies
+== Dependencies
 
-`incodesert` does not depend on any other gem in order to run.
++incodesert+ does not depend on any other gem in order to run.
 
-It does, however, depend on by [hoe](https://github.com/seattlerb/hoe) and
-[shoulda](https://github.com/thoughtbot/shoulda) for development and testing.
-It also depends on [rdoc2md](https://github.com/kirkbowers/rdoc2md) to generate 
+It does, however, depend on by hoe[https://github.com/seattlerb/hoe] and
+shoulda[https://github.com/thoughtbot/shoulda] for development and testing.
+It also depends on rdoc2md[https://github.com/kirkbowers/rdoc2md] to generate 
 the github friendly README file.
 
-## Developers/Contributing
+== Developers/Contributing
 
-`incodesert` is a Hoe project.  Like any other Hoe project, 
++incodesert+ is a Hoe project.  Like any other Hoe project, 
 after checking out the source, run:
 
   $ rake newb
@@ -121,6 +121,6 @@ and generate the RDoc.
 I welcome all enhancements/contributions to the project.  Please check the Issues first
 before adding some functionality.
 
-## License
+== License
 
-`incodesert` is released under the MIT license.  
++incodesert+ is released under the MIT license.  

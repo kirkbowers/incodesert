@@ -1,0 +1,124 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'incodesert'
+
+def usage
+  puts <<EOF
+incodesert [flags] <source-file> <dest-file> [extractions-file]
+  incodesert inserts the code snippets found in the source file delimited 
+  by special comment blocks and replaces matching comment blocks in the 
+  destination file.  If the optional extractions-file is supplied, that 
+  file will contain the snippets of code removed from the destination 
+  file (useful for later reverting the dest file).
+  
+  Flag:
+    --help
+      Displays this message
+    --verbose
+      Provides diagnostics on stdout
+    --no-warn
+      By default, the replaced blocks in the destination will contain a 
+      warning comment that the code there was auto-inserted by incodesert.  
+      This flag suppresses that warning comment (most likely you would use 
+      this when reverting from an extractions file).
+    --no-bak
+      By default, a backup of the destination file is produced with a .bak 
+      suffix, just in case something goes horribly wrong.  This flag 
+      cleans up that file upon completion.
+    --classname <name>
+      By default, any occurance of the token __CLASSNAME__ in the source 
+      file is replaced with the camel cased version of the destination
+      filename (sans path and suffix).  If you want to override this 
+      behavior with an explicit classname, supply it here.
+EOF
+
+  abort
+end
+
+# Monkeypatch String to do camel casing.
+class String
+  def camel_case
+    return self if self !~ /_/ && self =~ /[A-Z]+.*/ 
+    split('_').map{|e| e.capitalize}.join
+  end
+end
+
+
+verbose = false
+no_warn = false
+no_bak = false
+classname = nil
+
+while ARGV[0] =~ /^--/
+  arg = ARGV.shift
+  if arg == "--help"
+    usage
+  elsif arg == "--verbose"
+    verbose = true
+  elsif arg == "--no-warn"
+    no_warn = true
+  elsif arg == "--no-bak"
+    no_bak = true
+  elsif arg == "--classname"
+    classname = ARGV.shift
+  else
+    warn "Unrecognized flag: #{arg}"
+    usage
+  end
+end
+
+if ARGV.length < 2 and ARGV.length > 3
+  usage
+end
+
+source_name = ARGV.shift
+dest_name = ARGV.shift
+extractions_name = ARGV.shift if ARGV.any?
+bak_name = dest_name + ".bak"
+
+unless classname
+  # Deduce the classname represented by the dest file
+  # First strip off the path before the filename
+  classname = dest_name.sub(/\.\w+$/, "")
+  # Then strip off the suffix
+  classname = classname.sub(/^.*\//, "")
+
+  classname = classname.camel_case
+end
+
+source = File.open(source_name).read
+# Protect against goofy carriage returns on non-unix systems
+source.gsub!(/\r\n?/, "\n")
+
+FileUtils.cp(dest_name, bak_name)
+destination = File.open(bak_name).read
+# Protect against goofy carriage returns on non-unix systems
+destination.gsub!(/\r\n?/, "\n")
+
+documents = Incodesert::Documents.new(source, destination)
+documents.verbose = verbose
+documents.no_warn = no_warn
+documents.source_name = source_name
+
+documents.replacements["CLASSNAME"] = classname
+
+# Enough setup, let's light this candle!
+documents.perform_insertions!
+
+File.open(dest_name, "w") do |file|
+  file.print documents.destination
+end
+
+if extractions_name
+  File.open(extractions_name, "w") do |file|
+    file.print documents.extractions
+  end
+end
+
+if no_bak
+  FileUtils.rm(bak_name)
+end
+
+# All done!
+

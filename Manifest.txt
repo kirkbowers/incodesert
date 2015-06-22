@@ -1,0 +1,8 @@
+.autotest
+History.txt
+Manifest.txt
+README.txt
+Rakefile
+bin/incodesert
+lib/incodesert.rb
+test/test_incodesert.rb
