@@ -125,6 +125,53 @@ EOF
       assert_equal "", doc.warnings
     end    
     
+    should 'replace simple token with matching source and with warnings' do
+      source = <<EOF
+  // <<< token
+  
+  replaced_function();
+  
+  // >>> token
+EOF
+
+      result = <<EOF
+  this_should_stay_the_same();
+
+  // <<< token
+  //
+  // WARNING!!! This code auto-inserted by incodesert
+  // Do not edit this block!
+  
+  replaced_function();
+  
+  // >>> token
+  
+  also_should_stay_same();
+
+  // <<< token with spaces
+
+  // something else to be replaced
+  
+  // >>> token with spaces
+  
+  bringing_it_home();
+EOF
+
+      extractions = <<EOF
+  // <<< token
+  
+  code_to_be_replaced();
+  
+  // >>> token
+EOF
+
+      doc = Incodesert::Documents.new(source, @destination)
+      doc.perform_insertions!
+      assert_equal result, doc.destination
+      assert_equal extractions, doc.extractions
+      assert_equal "", doc.warnings
+    end    
+    
     should 'replace multi-word token with matching source and no warnings' do
       source = <<EOF
   // <<< token with spaces
@@ -345,6 +392,53 @@ EOF
 
       doc = Incodesert::Documents.new(source, @destination)
       doc.no_warn = true
+      doc.perform_insertions!
+      assert_equal result, doc.destination
+      assert_equal extractions, doc.extractions
+      assert_equal "", doc.warnings
+    end    
+    
+    should 'replace simple token with matching source and with warnings' do
+      source = <<EOF
+  # <<< token
+  
+  replaced_function();
+  
+  # >>> token
+EOF
+
+      result = <<EOF
+  this_should_stay_the_same();
+
+  # <<< token
+  #
+  # WARNING!!! This code auto-inserted by incodesert
+  # Do not edit this block!
+  
+  replaced_function();
+  
+  # >>> token
+  
+  also_should_stay_same();
+
+  # <<< token with spaces
+
+  # something else to be replaced
+  
+  # >>> token with spaces
+  
+  bringing_it_home();
+EOF
+
+      extractions = <<EOF
+  # <<< token
+  
+  code_to_be_replaced();
+  
+  # >>> token
+EOF
+
+      doc = Incodesert::Documents.new(source, @destination)
       doc.perform_insertions!
       assert_equal result, doc.destination
       assert_equal extractions, doc.extractions
