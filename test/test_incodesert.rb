@@ -2,7 +2,7 @@ require "shoulda-context"
 require "minitest/autorun"
 require "incodesert"
 
-class TestDocuments < MiniTest::Test
+class TestIncodesert < MiniTest::Test
   context 'With C-style comments' do
     setup do
       @destination = <<EOF
