@@ -119,7 +119,9 @@ This task will install any missing dependencies, run the tests/specs,
 and generate the RDoc.
 
 I welcome all enhancements/contributions to the project.  Please check the Issues first
-before adding some functionality.
+before adding some functionality.  I use the Git Flow methodology for managing the 
+development branch vs. the master branch.  Please create a "feature" branch of the 
+development branch in order to add to the codebase.
 
 == License
 
