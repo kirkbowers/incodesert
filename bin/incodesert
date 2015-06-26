@@ -50,6 +50,10 @@ no_warn = false
 no_bak = false
 classname = nil
 
+if ARGV.length < 1
+  usage
+end
+
 while ARGV[0] =~ /^--/
   arg = ARGV.shift
   if arg == "--help"
@@ -105,6 +109,9 @@ documents.replacements["CLASSNAME"] = classname
 
 # Enough setup, let's light this candle!
 documents.perform_insertions!
+
+# Spew any warnings that came up (usually mismatched token names)
+warn documents.warnings
 
 File.open(dest_name, "w") do |file|
   file.print documents.destination

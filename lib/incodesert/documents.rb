@@ -12,13 +12,14 @@ module Incodesert
   # Documents also performs the insertion upon calling +perform_insertions!+
   # 
   # Author:: Kirk Bowers (mailto:kirkbowers@yahoo.com)
-  # Copyright:: Copyright (c) 2014 Frabjous Apps LLC
+  # Copyright:: Copyright (c) 2015 Kirk Bowers
   # License:: MIT License
   class Documents
     
     attr_accessor :source
     attr_accessor :destination
     attr_reader   :extractions
+    attr_reader   :warnings
     
     attr_accessor :replacements
         
@@ -30,11 +31,18 @@ module Incodesert
       @source = source
       @destination = destination
       @extractions = []
+      @warnings = []
 
       @replacements = {}      
       
       @verbose = false
       @no_warn = false
+      @source_name = nil
+    end
+    
+    # Shadow global warn function
+    def warn(message)
+      @warnings.push message
     end
     
     def perform_insertions!
@@ -44,6 +52,11 @@ module Incodesert
       
       @destination = @destination.join("\n")
       @extractions = @extractions.join("\n")
+      # Add an extra newline to extractions so it doesn't end without one if non-empty
+      @extractions += "\n" if @extractions != ""
+      
+      @warnings = @warnings.join("\n")
+      @warnings += "\n" if @warnings != ""
     end
     
     #-----------------------------------------------------------
@@ -58,15 +71,16 @@ module Incodesert
       lines = @source.split("\n", -1)
       
       lines.each do |line|
+        # If we match either a C-style or script style comment, exactly 3 < (in) chars,
+        # one or more spaces, then anything as a token (even including spaces)
+        # that opens a source block
         if line =~ /^(\s*(\/{2}|#))\s+<{3}\s+(.+)/
           open_source_block(line, $1, $3)
-#         elsif line =~ /^(\s*\#)\s+\<\<\<\s+(.+)/
-#           open_source_block(line, $1, $2)
-#        elsif line =~ /^\s*\/\/\s+\>\>\>\s+(.+)/
+        # Similarly, match a comment, exactly 3 > (out) chars, and a token,
+        # close the block
         elsif line =~ /^\s*(\/{2}|#)\s+>{3}\s+(.+)/
           close_source_block(line, $2)
-#         elsif line =~ /^\s*\#\s+\>\>\>\s+(.+)/
-#           close_source_block(line, $1)
+        # If we are in a current block, remember this line
         elsif @current_block_name != ""
           @current_block.push(line)
         end
@@ -98,7 +112,7 @@ module Incodesert
         warn "In source: open and close blocks do not match!!"
         warn "Opened with #{@current_block_name}"
         warn "Closed with #{name}"
-  		end
+      end
 
       # Either way, we've attempted to close a block, so clear the current block name
       # to signify we are not currently in a block at all.
@@ -135,11 +149,11 @@ module Incodesert
       @current_block = [line]
     end
     
-    def close_destination_block(line, name)
+    def close_destination_block(in_line, name)
       name = name.rstrip
       puts "Destination: close block: #{name}" if @verbose
 
-      @current_block.push(line)
+      @current_block.push(in_line)
 
       if name == @current_block_name
         lines_to_insert = @blocks[name]
@@ -191,7 +205,7 @@ module Incodesert
         warn "In Destination: open and close blocks do not match!!"
         warn "Opened with #{@current_block_name}"
         warn "Closed with #{name}"
-  		end
+      end
 
       # Either way, we've attempted to close a block, so clear the current block name
       # to signify we are not currently in a block at all.
